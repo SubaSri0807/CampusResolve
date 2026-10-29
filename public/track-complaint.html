@@ -1,0 +1,219 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Track Complaint | CampusResolve</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f5f6fc;
+      color: #17233f;
+    }
+
+    header {
+      background: #172554;
+      color: white;
+      padding: 22px 6%;
+    }
+
+    header h1 { margin: 0 0 6px; }
+    header p { margin: 0; color: #dbeafe; }
+
+    main {
+      width: min(620px, 92%);
+      margin: 45px auto;
+    }
+
+    .panel {
+      background: white;
+      padding: 28px;
+      border-radius: 16px;
+      box-shadow: 0 5px 22px rgba(23, 37, 84, 0.08);
+    }
+
+    label {
+      display: block;
+      margin: 18px 0 8px;
+      font-weight: bold;
+    }
+
+    input {
+      width: 100%;
+      padding: 13px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+
+    button {
+      margin-top: 14px;
+      padding: 13px 18px;
+      width: 100%;
+      border: 0;
+      border-radius: 8px;
+      background: #5b45d6;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:disabled { opacity: 0.65; cursor: wait; }
+
+    #result {
+      margin-top: 24px;
+      line-height: 1.6;
+      overflow-wrap: anywhere;
+    }
+
+    .status {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 20px;
+      background: #fff2d7;
+      font-weight: bold;
+    }
+
+    .resolved { background: #def7ec; color: #087f5b; }
+    .rejected { background: #ffe6e6; color: #a52b2b; }
+    .progress { background: #e1edff; color: #2459a9; }
+
+    .detail {
+      padding: 12px 0;
+      border-bottom: 1px solid #e2e6f0;
+    }
+
+    .muted { color: #64748b; font-size: 14px; }
+    a { color: #5b45d6; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>CampusResolve</h1>
+    <p>Student Complaint Tracking</p>
+  </header>
+
+  <main>
+    <section class="panel">
+      <h2>Track your complaint</h2>
+      <p>Enter the complaint ID you received after submitting your complaint.</p>
+
+      <form id="trackForm">
+        <label for="complaintId">Complaint ID</label>
+        <input
+          id="complaintId"
+          name="complaintId"
+          type="text"
+          placeholder="Paste your complaint ID"
+          required
+        >
+        <button id="trackButton" type="submit">Check Status</button>
+      </form>
+
+      <div id="result" role="status" aria-live="polite"></div>
+      <p class="muted"><a href="/">Return to the student portal</a></p>
+    </section>
+  </main>
+
+  <script>
+    const form = document.getElementById("trackForm");
+    const result = document.getElementById("result");
+    const button = document.getElementById("trackButton");
+
+    const params = new URLSearchParams(window.location.search);
+    const complaintIdFromUrl = params.get("id");
+
+    if (complaintIdFromUrl) {
+        document.getElementById("complaintId").value =
+        complaintIdFromUrl;
+    }
+    function addDetail(container, label, value) {
+      const row = document.createElement("div");
+      row.className = "detail";
+
+      const heading = document.createElement("strong");
+      heading.textContent = label + ": ";
+
+      const text = document.createElement("span");
+      text.textContent = value || "Not provided";
+
+      row.append(heading, text);
+      container.appendChild(row);
+    }
+
+    form.addEventListener("submit", async event => {
+      event.preventDefault();
+
+      const id = document.getElementById("complaintId").value.trim();
+      result.replaceChildren();
+
+      if (!id) {
+        result.textContent = "Please enter your complaint ID.";
+        return;
+      }
+
+      button.disabled = true;
+      button.textContent = "Checking...";
+      result.textContent = "Searching for your complaint...";
+
+      try {
+        const response = await fetch(
+          "/api/complaints/" + encodeURIComponent(id) + "/track",
+          { cache: "no-store" }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || "Could not find the complaint.");
+        }
+
+        result.replaceChildren();
+
+        const heading = document.createElement("h3");
+        heading.textContent = "Complaint Details";
+        result.appendChild(heading);
+
+        addDetail(result, "Complaint ID", data._id);
+        addDetail(result, "Title", data.title);
+        addDetail(result, "Category", data.category);
+        addDetail(result, "Submitted", data.createdAt
+          ? new Date(data.createdAt).toLocaleString()
+          : "Not available");
+
+        const statusRow = document.createElement("div");
+        statusRow.className = "detail";
+
+        const statusHeading = document.createElement("strong");
+        statusHeading.textContent = "Current status: ";
+
+        const status = document.createElement("span");
+        status.className = "status";
+        if (data.status === "Resolved") status.classList.add("resolved");
+        if (data.status === "Rejected") status.classList.add("rejected");
+        if (data.status === "In Progress") status.classList.add("progress");
+        status.textContent = data.status;
+
+        statusRow.append(statusHeading, status);
+        result.appendChild(statusRow);
+
+        addDetail(result, "Resolution / Update", data.resolutionNote);
+      } catch (error) {
+        result.replaceChildren();
+        const message = document.createElement("p");
+        message.textContent = error.message;
+        message.style.color = "#b42318";
+        result.appendChild(message);
+      } finally {
+        button.disabled = false;
+        button.textContent = "Check Status";
+      }
+    });
+  </script>
+</body>
+</html>

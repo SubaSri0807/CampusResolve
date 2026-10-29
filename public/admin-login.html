@@ -1,0 +1,95 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login | CampusResolve</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .login-container {
+      max-width: 420px;
+      margin: 70px auto;
+      padding: 28px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.1);
+    }
+    .login-container h1 { margin-bottom: 8px; }
+    .login-container input {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0 16px;
+      box-sizing: border-box;
+    }
+    .login-container button {
+      width: 100%;
+      padding: 12px;
+      cursor: pointer;
+    }
+    #message { margin-top: 14px; }
+  </style>
+</head>
+<body>
+  <main class="login-container">
+    <h1>Admin Login</h1>
+    <p>CampusResolve complaint management</p>
+
+    <form id="loginForm">
+      <label for="username">Username</label>
+      <input id="username" name="username"
+             type="text" autocomplete="username" required>
+
+      <label for="password">Password</label>
+      <input id="password" name="password"
+             type="password" autocomplete="current-password" required>
+
+      <button type="submit">Log In</button>
+      <p id="message" role="status"></p>
+    </form>
+  </main>
+
+  <script>
+    const form = document.getElementById("loginForm");
+    const message = document.getElementById("message");
+
+    // If already logged in, go straight to the dashboard.
+    fetch("/api/admin/session")
+      .then(response => response.json())
+      .then(data => {
+        if (data.authenticated) {
+          window.location.href = "/admin.html";
+        }
+      })
+      .catch(() => {});
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      message.textContent = "Signing in...";
+
+      const username = document.getElementById("username").value;
+      const password = document.getElementById("password").value;
+
+      try {
+        const response = await fetch("/api/admin/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "same-origin",
+          body: JSON.stringify({ username, password })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          message.textContent = data.message || "Login failed.";
+          return;
+        }
+
+        window.location.href = "/admin.html";
+      } catch (error) {
+        message.textContent = "Cannot connect to the server. Please try again.";
+      }
+    });
+  </script>
+</body>
+</html>

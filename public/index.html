@@ -1,0 +1,153 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#172554">
+  <title>CampusResolve | Student Grievance Portal</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header class="header">
+    <div class="brand">
+      <div class="brand-icon">CR</div>
+      <div>
+        <h1>CampusResolve</h1>
+        <p>Student Grievance Portal</p>
+      </div>
+    </div>
+    <span class="status">● Portal Online</span>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <p class="eyebrow">YOUR VOICE MATTERS</p>
+      <h2>A better campus starts<br>with being heard.</h2>
+      <p>Share your concerns with us. We are here to listen, respond, and make your campus better.</p>
+    </section>
+
+    <section class="stats">
+      <div class="stat-card">
+        <span>Total Complaints</span>
+        <strong id="totalCount">0</strong>
+      </div>
+      <div class="stat-card">
+        <span>Pending</span>
+        <strong id="pendingCount">0</strong>
+      </div>
+      <div class="stat-card">
+        <span>Resolved</span>
+        <strong id="resolvedCount">0</strong>
+      </div>
+    </section>
+
+    <section class="content-grid">
+      <div class="form-card">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">SUBMIT A GRIEVANCE</p>
+            <h2>Tell us what's wrong</h2>
+          </div>
+          <span class="step-number">01</span>
+        </div>
+
+        <p class="description">Tell us about your concern. Fields marked * are required.</p>
+
+        <form id="complaintForm">
+          <div class="field">
+            <label for="studentName">Full name *</label>
+            <input id="studentName" name="studentName" type="text" required placeholder="Enter your full name">
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="studentId">Student ID *</label>
+              <input id="studentId" name="studentId" type="text" required placeholder="e.g. STU001">
+            </div>
+            <div class="field">
+              <label for="department">Department *</label>
+              <input id="department" name="department" type="text" required placeholder="e.g. CSE">
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="category">Category *</label>
+              <select id="category" name="category" required>
+                <option value="">Select category</option>
+                <option value="Infrastructure">Infrastructure</option>
+                <option value="Academics">Academics</option>
+                <option value="Hostel">Hostel</option>
+                <option value="Canteen">Canteen</option>
+                <option value="Transport">Transport</option>
+                <option value="Harassment">Harassment</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="priority">Priority</label>
+              <select id="priority" name="priority">
+                <option value="Low">Low</option>
+                <option value="Medium" selected>Medium</option>
+                <option value="High">High</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="title">Complaint title *</label>
+            <input id="title" name="title" type="text" maxlength="120" required placeholder="Briefly describe the issue">
+          </div>
+
+          <div class="field">
+            <label for="description">Description *</label>
+            <textarea id="description" name="description" rows="5" maxlength="3000" required placeholder="Explain the issue and where it happened"></textarea>
+          </div>
+
+          <button type="submit" id="submitButton">Submit Complaint →</button>
+          <p id="formMessage" role="status" aria-live="polite"></p>
+        </form>
+      </div>
+
+      <aside class="info-column">
+        <div class="info-card">
+          <div class="info-icon">✦</div>
+          <h3>How it works</h3>
+          <ol>
+            <li><span>1</span><div><strong>Submit</strong><p>Tell us about your concern.</p></div></li>
+            <li><span>2</span><div><strong>Under review</strong><p>The college team reviews it.</p></div></li>
+            <li><span>3</span><div><strong>Resolution</strong><p>Follow the complaint's progress.</p></div></li>
+          </ol>
+        </div>
+
+        <div class="info-card privacy-card">
+          <div class="info-icon">✓</div>
+          <h3>Your concern matters</h3>
+          <p>Please provide accurate details so the college team can understand and address the issue.</p>
+        </div>
+      </aside>
+    </section>
+
+    <section class="complaints-section">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">CAMPUS COMMUNITY</p>
+          <h2>Recent complaints</h2>
+        </div>
+        <button type="button" id="refreshButton" class="secondary-button">↻ Refresh</button>
+      </div>
+
+      <div id="complaintsList" class="complaints-list">
+        <p class="empty-state">Loading complaints...</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>CampusResolve · Building a better campus, together.</p>
+  </footer>
+
+  <script src="/script.js"></script>
+</body>
+</html>

@@ -1,0 +1,676 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CampusResolve | Admin Dashboard</title>
+  <style>
+    :root {
+      --navy: #172554;
+      --purple: #5b45d6;
+      --background: #f5f6fc;
+      --border: #e2e6f0;
+      --muted: #64748b;
+      --green: #087f5b;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--background);
+      color: #17233f;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    header {
+      background: white;
+      border-bottom: 1px solid var(--border);
+      padding: 20px 5%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo {
+      background: var(--purple);
+      color: white;
+      border-radius: 14px;
+      padding: 15px 12px;
+      font-weight: bold;
+      font-size: 20px;
+    }
+
+    h1, h2, h3, p {
+      margin-top: 0;
+    }
+
+    h1 {
+      font-size: 21px;
+      margin-bottom: 5px;
+    }
+
+    header p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .admin-label {
+      background: #eeebff;
+      color: var(--purple);
+      padding: 10px 14px;
+      border-radius: 25px;
+      font-size: 13px;
+      font-weight: bold;
+      white-space: nowrap;
+    }
+
+    main {
+      max-width: 1200px;
+      padding: 30px 20px;
+      margin: auto;
+    }
+
+    .welcome {
+      background: linear-gradient(120deg, #192857, #5140b9);
+      color: white;
+      border-radius: 22px;
+      padding: 32px;
+      margin-bottom: 24px;
+    }
+
+    .welcome .eyebrow {
+      color: #d9d1ff;
+      font-size: 12px;
+      font-weight: bold;
+      letter-spacing: 2px;
+    }
+
+    .welcome h2 {
+      font-size: 30px;
+      margin-bottom: 10px;
+    }
+
+    .welcome p {
+      margin-bottom: 0;
+      line-height: 1.6;
+      color: #e8eaff;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+
+    .stat {
+      background: white;
+      padding: 22px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+    }
+
+    .stat p {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+
+    .stat strong {
+      font-size: 30px;
+    }
+
+    .panel {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+
+    .panel-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    .panel-heading h2 {
+      font-size: 22px;
+      margin-bottom: 6px;
+    }
+
+    .panel-heading p {
+      color: var(--muted);
+      margin-bottom: 0;
+      font-size: 14px;
+    }
+
+    button, select, textarea, input {
+      font: inherit;
+    }
+
+    button {
+      border: 0;
+      cursor: pointer;
+      border-radius: 9px;
+      padding: 11px 15px;
+      font-weight: bold;
+    }
+
+    button:disabled {
+      cursor: wait;
+      opacity: 0.6;
+    }
+
+    .refresh {
+      background: #eeebff;
+      color: var(--purple);
+    }
+
+    .complaint-list {
+      display: grid;
+      gap: 18px;
+    }
+
+    .complaint {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      min-width: 0;
+    }
+
+    .complaint-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+
+    .complaint h3 {
+      margin-bottom: 9px;
+      font-size: 19px;
+      overflow-wrap: anywhere;
+    }
+
+    .complaint p {
+      line-height: 1.6;
+      overflow-wrap: anywhere;
+    }
+
+    .muted {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .description {
+      margin: 18px 0;
+      white-space: pre-wrap;
+    }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 14px 0;
+    }
+
+    .tag {
+      background: #f0f2f8;
+      color: #3f4b65;
+      border-radius: 7px;
+      padding: 7px 10px;
+      font-size: 12px;
+    }
+
+    .tag.status {
+      background: #fff2d7;
+      color: #8a5700;
+    }
+
+    .tag.resolved {
+      background: #def7ec;
+      color: #087f5b;
+    }
+
+    .tag.progress {
+      background: #e1edff;
+      color: #2459a9;
+    }
+
+    .tag.rejected {
+      background: #ffe6e6;
+      color: #a52b2b;
+    }
+
+    .admin-form {
+      background: #f8f9fd;
+      border-radius: 12px;
+      padding: 16px;
+      margin-top: 18px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+      gap: 15px;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    select, textarea {
+      width: 100%;
+      border: 1px solid #d8deeb;
+      border-radius: 9px;
+      padding: 11px;
+      background: white;
+      color: #17233f;
+    }
+
+    textarea {
+      min-height: 44px;
+      resize: vertical;
+    }
+
+    .save-button {
+      background: var(--purple);
+      color: white;
+      margin-top: 14px;
+    }
+
+    .message {
+      margin: 12px 0 0;
+      font-size: 13px;
+    }
+
+    .empty {
+      text-align: center;
+      padding: 35px 15px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    footer {
+      padding: 25px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    @media (max-width: 750px) {
+      .stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .welcome {
+        padding: 24px;
+      }
+
+      .welcome h2 {
+        font-size: 25px;
+      }
+
+      .panel {
+        padding: 16px;
+      }
+
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 400px) {
+      header {
+        padding: 15px;
+      }
+
+      .admin-label {
+        font-size: 11px;
+        padding: 8px;
+      }
+
+      .stats {
+        gap: 9px;
+      }
+
+      .stat {
+        padding: 15px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="brand">
+      <div class="logo">CR</div>
+      <div>
+        <h1>CampusResolve</h1>
+        <p>Administration Portal</p>
+      </div>
+    </div>
+    <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+  <span class="admin-label">ADMIN DASHBOARD</span>
+  <button id="logoutBtn" type="button"
+          style="background:#ffe6e6; color:#a52b2b;">
+    Logout
+  </button>
+</div>
+  </header>
+
+  <main>
+    <section class="welcome">
+      <p class="eyebrow">COMPLAINT MANAGEMENT</p>
+      <h2>Welcome, Administrator</h2>
+      <p>Review student grievances, track their progress, and record resolutions.</p>
+    </section>
+
+    <section class="stats">
+      <div class="stat">
+        <p>Total complaints</p>
+        <strong id="totalCount">0</strong>
+      </div>
+      <div class="stat">
+        <p>Pending</p>
+        <strong id="pendingCount">0</strong>
+      </div>
+      <div class="stat">
+        <p>In progress</p>
+        <strong id="progressCount">0</strong>
+      </div>
+      <div class="stat">
+        <p>Resolved</p>
+        <strong id="resolvedCount">0</strong>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-heading">
+        <div>
+          <h2>Student complaints</h2>
+          <p>Review each complaint and update its status below.</p>
+        </div>
+        <button class="refresh" id="refreshButton" type="button">
+          ↻ Refresh
+        </button>
+      </div>
+
+      <div id="pageMessage" class="message" role="status" aria-live="polite"></div>
+      <div id="complaintsList" class="complaint-list">
+        <p class="empty">Loading complaints...</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>CampusResolve · Building a better campus, together.</footer>
+
+  <script>
+    const API_URL = "/api/complaints";
+
+    const complaintsList = document.getElementById("complaintsList");
+    const pageMessage = document.getElementById("pageMessage");
+    const refreshButton = document.getElementById("refreshButton");
+
+    function makeElement(tag, className, content) {
+      const element = document.createElement(tag);
+      if (className) element.className = className;
+      if (content !== undefined) element.textContent = content;
+      return element;
+    }
+
+    function addTag(container, label, statusClass = "") {
+      container.appendChild(makeElement("span", `tag ${statusClass}`, label));
+    }
+
+    function updateStats(complaints) {
+      document.getElementById("totalCount").textContent = complaints.length;
+      document.getElementById("pendingCount").textContent =
+        complaints.filter(c => c.status === "Pending").length;
+      document.getElementById("progressCount").textContent =
+        complaints.filter(c => c.status === "In Progress").length;
+      document.getElementById("resolvedCount").textContent =
+        complaints.filter(c => c.status === "Resolved").length;
+    }
+
+    function createComplaintCard(complaint) {
+      const card = makeElement("article", "complaint");
+      const top = makeElement("div", "complaint-top");
+      const heading = makeElement("div");
+
+      heading.appendChild(makeElement("h3", "", complaint.title || "Untitled complaint"));
+      heading.appendChild(makeElement(
+        "p",
+        "muted",
+        `Student: ${complaint.studentName} · ID: ${complaint.studentId} · Department: ${complaint.department}`
+      ));
+
+      const tags = makeElement("div", "tags");
+      addTag(tags, complaint.category || "Other");
+      addTag(tags, `Priority: ${complaint.priority || "Medium"}`);
+
+      let statusClass = "status";
+      if (complaint.status === "Resolved") statusClass = "resolved";
+      if (complaint.status === "In Progress") statusClass = "progress";
+      if (complaint.status === "Rejected") statusClass = "rejected";
+      addTag(tags, `Status: ${complaint.status || "Pending"}`, statusClass);
+
+      top.append(heading, tags);
+      card.appendChild(top);
+
+      card.appendChild(makeElement(
+        "p",
+        "description",
+        complaint.description || "No description provided."
+      ));
+
+      const date = complaint.createdAt
+        ? new Date(complaint.createdAt).toLocaleString()
+        : "Date unavailable";
+
+      card.appendChild(makeElement("p", "muted", `Submitted: ${date}`));
+
+      const form = makeElement("form", "admin-form");
+      const grid = makeElement("div", "form-grid");
+
+      const statusField = makeElement("div");
+      const statusLabel = makeElement("label", "", "Update status");
+      const statusSelect = document.createElement("select");
+      statusSelect.setAttribute("aria-label", "Update complaint status");
+
+      ["Pending", "In Progress", "Resolved", "Rejected"].forEach(status => {
+        const option = document.createElement("option");
+        option.value = status;
+        option.textContent = status;
+        if ((complaint.status || "Pending") === status) option.selected = true;
+        statusSelect.appendChild(option);
+      });
+
+      statusLabel.appendChild(statusSelect);
+      statusField.appendChild(statusLabel);
+
+      const noteField = makeElement("div");
+      const noteLabel = makeElement("label", "", "Resolution note");
+      const noteInput = document.createElement("textarea");
+      noteInput.rows = 2;
+      noteInput.maxLength = 2000;
+      noteInput.placeholder = "Add an update or explain the resolution...";
+      noteInput.setAttribute("aria-label", "Resolution note");
+      noteInput.value = complaint.resolutionNote || "";
+      noteLabel.appendChild(noteInput);
+      noteField.appendChild(noteLabel);
+
+      grid.append(statusField, noteField);
+      form.appendChild(grid);
+
+      const saveButton = makeElement("button", "save-button", "Save Update");
+      saveButton.type = "submit";
+      form.appendChild(saveButton);
+
+      const feedback = makeElement("p", "message");
+      feedback.setAttribute("role", "status");
+      form.appendChild(feedback);
+
+      form.addEventListener("submit", async event => {
+        event.preventDefault();
+        saveButton.disabled = true;
+        saveButton.textContent = "Saving...";
+        feedback.textContent = "";
+
+        try {
+          const response = await fetch(
+            `${API_URL}/${encodeURIComponent(complaint._id)}/status`,
+            {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                status: statusSelect.value,
+                resolutionNote: noteInput.value
+              })
+            }
+          );
+
+          const result = await response.json();
+
+          if (!response.ok) {
+            throw new Error(result.message || "Could not update complaint.");
+          }
+
+          feedback.style.color = "#087f5b";
+          feedback.textContent = "Update saved successfully.";
+          pageMessage.style.color = "#087f5b";
+          pageMessage.textContent = "Complaint updated successfully.";
+
+          await loadComplaints();
+        } catch (error) {
+          feedback.style.color = "#b42318";
+          feedback.textContent = error.message;
+        } finally {
+          saveButton.disabled = false;
+          saveButton.textContent = "Save Update";
+        }
+      });
+
+      card.appendChild(form);
+      return card;
+    }
+
+    async function loadComplaints() {
+      refreshButton.disabled = true;
+      pageMessage.textContent = "";
+      complaintsList.replaceChildren(
+        makeElement("p", "empty", "Loading complaints...")
+      );
+
+      try {
+        const response = await fetch(API_URL);
+        if (!response.ok) {
+          throw new Error("Could not load complaints from the server.");
+        }
+
+        const complaints = await response.json();
+        updateStats(complaints);
+        complaintsList.replaceChildren();
+
+        if (complaints.length === 0) {
+          complaintsList.appendChild(
+            makeElement("p", "empty", "No complaints have been submitted yet.")
+          );
+          return;
+        }
+
+        complaints.forEach(complaint => {
+          complaintsList.appendChild(createComplaintCard(complaint));
+        });
+      } catch (error) {
+        complaintsList.replaceChildren(
+          makeElement("p", "empty", error.message)
+        );
+        pageMessage.style.color = "#b42318";
+        pageMessage.textContent =
+          "Check that the CampusResolve server is running, then refresh.";
+      } finally {
+        refreshButton.disabled = false;
+      }
+    }
+
+async function initializeDashboard() {
+  try {
+    const response = await fetch("/api/admin/session");
+
+    if (!response.ok) {
+      window.location.replace("/admin-login.html");
+      return;
+    }
+
+    const data = await response.json();
+
+    if (!data.authenticated) {
+      window.location.replace("/admin-login.html");
+      return;
+    }
+
+    refreshButton.addEventListener("click", loadComplaints);
+    await loadComplaints();
+    startInactivityTimer();
+  } catch (error) {
+    window.location.replace("/admin-login.html");
+  }
+}
+
+const INACTIVITY_LIMIT_MS = 30 * 1000;
+let inactivityTimer;
+
+function resetInactivityTimer() {
+  clearTimeout(inactivityTimer);
+  inactivityTimer = setTimeout(automaticLogout, INACTIVITY_LIMIT_MS);
+}
+
+async function automaticLogout() {
+  try {
+    await fetch("/api/admin/logout", {
+      method: "POST",
+      credentials: "same-origin"
+    });
+  } finally {
+    window.location.replace("/admin-login.html");
+  }
+}
+
+function startInactivityTimer() {
+  ["mousemove", "mousedown", "keydown", "scroll", "touchstart", "click"]
+    .forEach(eventName => {
+      document.addEventListener(eventName, resetInactivityTimer, {
+        passive: true
+      });
+    });
+
+  resetInactivityTimer();
+}
+
+document.getElementById("logoutBtn").addEventListener("click", automaticLogout);
+
+initializeDashboard();
+
+  </script>
+</body>
+</html>
