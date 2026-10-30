@@ -9,33 +9,91 @@ require("dotenv").config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Check required authentication settings
-if (
-  !process.env.ADMIN_USERNAME ||
-  !process.env.ADMIN_PASSWORD ||
-  !process.env.SESSION_SECRET ||
-  process.env.SESSION_SECRET === "change-this-to-a-long-random-secret"
-) {
-  console.error(
-    "Please set ADMIN_USERNAME, ADMIN_PASSWORD, and a unique SESSION_SECRET in .env"
-  );
-  process.exit(1);
+const mongoUri =
+  process.env.MONGODB_URI ||
+  (process.env.NODE_ENV === "production"
+    ? null
+    : "mongodb://127.0.0.1:27017/campusresolve");
+
+const sessionSecret =
+  process.env.SESSION_SECRET ||
+  (process.env.NODE_ENV !== "production"
+    ? "local-development-only-change-this-secret"
+    : "missing-production-session-secret");
+
+// Cache MongoDB connection across serverless invocations.
+let mongoConnectionPromise;
+
+async function connectToDatabase() {
+  if (mongoose.connection.readyState === 1) {
+    return;
+  }
+
+  if (!mongoUri) {
+    throw new Error("MONGODB_URI is not configured.");
+  }
+
+  if (!mongoConnectionPromise) {
+    mongoConnectionPromise = mongoose
+      .connect(mongoUri)
+      .catch((error) => {
+        mongoConnectionPromise = null;
+        throw error;
+      });
+  }
+
+  await mongoConnectionPromise;
+}
+
+// Trust Vercel proxy for secure cookies.
+if (process.env.NODE_ENV === "production") {
+  app.set("trust proxy", 1);
 }
 
 // Basic middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Serve frontend files
+app.use(express.static(path.join(__dirname, "public")));
+
+// Connect to MongoDB before API requests.
+app.use("/api", async (req, res, next) => {
+  try {
+    if (
+      process.env.NODE_ENV === "production" &&
+      (!process.env.ADMIN_USERNAME ||
+        !process.env.ADMIN_PASSWORD ||
+        !process.env.SESSION_SECRET ||
+        process.env.SESSION_SECRET ===
+          "change-this-to-a-long-random-secret")
+    ) {
+      return res.status(503).json({
+        message: "Server authentication configuration is incomplete."
+      });
+    }
+
+    await connectToDatabase();
+    next();
+  } catch (error) {
+    console.error("Database connection error:", error.message);
+
+    res.status(503).json({
+      message: "Database connection unavailable."
+    });
+  }
+});
+
 // Store admin sessions in MongoDB
 app.use(
   session({
     name: "campusresolve.sid",
-    secret: process.env.SESSION_SECRET,
+    secret: sessionSecret,
     resave: false,
     saveUninitialized: false,
     store: MongoStore.create({
       mongoUrl:
-        process.env.MONGODB_URI ||
+        mongoUri ||
         "mongodb://127.0.0.1:27017/campusresolve",
       collectionName: "admin_sessions",
       ttl: 60 * 60 * 2
@@ -115,12 +173,7 @@ app.post("/api/admin/logout", requireAdmin, (req, res, next) => {
   });
 });
 
-// Serve HTML, CSS and JavaScript files
-app.use(express.static(path.join(__dirname, "public")));
-
 // Complaint routes
-
- // Complaint routes
 const complaintRoutes = require("./routes/complaints");
 
 app.use(
@@ -135,7 +188,10 @@ app.use(
       );
 
     const isAdminOnlyRequest =
-      req.method === "GET" ||
+      (
+        req.method === "GET" &&
+        !isPublicRequest
+      ) ||
       (
         req.method === "PATCH" &&
         /^\/[^/]+\/status\/?$/.test(req.path)
@@ -155,7 +211,6 @@ app.use(
   complaintRoutes
 );
 
-
 // Health check
 app.get("/api/health", (req, res) => {
   res.json({
@@ -168,36 +223,31 @@ app.get("/api/health", (req, res) => {
   });
 });
 
-// Start server after connecting to MongoDB
-async function startServer() {
-  try {
-    const mongoUri =
-      process.env.MONGODB_URI ||
-      "mongodb://127.0.0.1:27017/campusresolve";
+// Local development only.
+// Vercel uses the exported Express application.
+if (require.main === module) {
+  connectToDatabase()
+    .then(() => {
+      console.log("MongoDB connected successfully!");
 
-    await mongoose.connect(mongoUri);
-
-    console.log("MongoDB connected successfully!");
-
-    app.listen(PORT, () => {
-      console.log(`CampusResolve: http://localhost:${PORT}`);
-      console.log(
-        `Admin login: http://localhost:${PORT}/admin-login.html`
-      );
-      console.log(
-        `Health check: http://localhost:${PORT}/api/health`
-      );
-      console.log(
-        `Complaints API: http://localhost:${PORT}/api/complaints`
-      );
+      app.listen(PORT, () => {
+        console.log(`CampusResolve: http://localhost:${PORT}`);
+        console.log(
+          `Admin login: http://localhost:${PORT}/admin-login.html`
+        );
+        console.log(
+          `Health check: http://localhost:${PORT}/api/health`
+        );
+        console.log(
+          `Complaints API: http://localhost:${PORT}/api/complaints`
+        );
+      });
+    })
+    .catch((error) => {
+      console.error("Failed to start CampusResolve:", error.message);
+      process.exitCode = 1;
     });
-  } catch (error) {
-    console.error(
-      "Failed to start CampusResolve:",
-      error.message
-    );
-    process.exit(1);
-  }
 }
 
-startServer();
+// Export Express application for Vercel.
+module.exports = app;

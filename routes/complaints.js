@@ -40,7 +40,7 @@ router.post("/", async (req, res) => {
   }
 });
 
-/* Public dashboard summary */
+// Public dashboard summary
 router.get("/public/summary", async (req, res) => {
   try {
     const [total, pending, resolved] = await Promise.all([
@@ -58,7 +58,7 @@ router.get("/public/summary", async (req, res) => {
   }
 });
 
-/* Public recent complaints */
+// Public recent complaints
 router.get("/public/recent", async (req, res) => {
   try {
     const complaints = await Complaint.find()
@@ -75,60 +75,14 @@ router.get("/public/recent", async (req, res) => {
   }
 });
 
-/* Track a complaint by ID (public endpoint) */
-router.get("/:id/track", async (req, res) => {
-  try {
-    if (!mongoose.isValidObjectId(req.params.id)) {
-      return res.status(400).json({
-        message: "Invalid complaint ID"
-      });
-    }
-
-    const complaint = await Complaint.findById(req.params.id)
-      .select("_id title category status resolutionNote createdAt updatedAt");
-
-    if (!complaint) {
-      return res.status(404).json({
-        message: "Complaint not found"
-      });
-    }
-
-    res.status(200).json(complaint);
-  } catch (error) {
-    res.status(500).json({
-      message: "Could not track complaint",
-      error: error.message
-    });
-  }
-});
-
-// Get all complaints
-router.get("/", async (req, res) => {
-  try {
-    const complaints = await Complaint.find().sort({
-      createdAt: -1
-    });
-
-    res.status(200).json(complaints);
-  } catch (error) {
-    res.status(500).json({
-      message: "Could not load complaints",
-      error: error.message
-    });
-  }
-});
-
-// Get one complaint by ID
-router.get("/:id", async (req, res) => {
-    
-/* Student: Track a complaint by ID */
+// Public complaint tracking
 router.get("/:id/track", async (req, res) => {
   try {
     const complaintId = req.params.id;
 
     if (!mongoose.isValidObjectId(complaintId)) {
       return res.status(400).json({
-        message: "Invalid complaint ID. Please check the ID and try again."
+        message: "Invalid complaint ID"
       });
     }
 
@@ -138,7 +92,7 @@ router.get("/:id/track", async (req, res) => {
 
     if (!complaint) {
       return res.status(404).json({
-        message: "Complaint not found. Please check your complaint ID."
+        message: "Complaint not found"
       });
     }
 
@@ -155,11 +109,29 @@ router.get("/:id/track", async (req, res) => {
     console.error("Complaint tracking error:", error);
 
     res.status(500).json({
-      message: "Could not track the complaint. Please try again later."
+      message: "Could not track complaint"
     });
   }
 });
 
+// Get all complaints (admin protected in server.js)
+router.get("/", async (req, res) => {
+  try {
+    const complaints = await Complaint.find().sort({
+      createdAt: -1
+    });
+
+    res.status(200).json(complaints);
+  } catch (error) {
+    res.status(500).json({
+      message: "Could not load complaints",
+      error: error.message
+    });
+  }
+});
+
+// Get one complaint by ID (admin protected in server.js)
+router.get("/:id", async (req, res) => {
   try {
     if (!mongoose.isValidObjectId(req.params.id)) {
       return res.status(400).json({
@@ -185,6 +157,7 @@ router.get("/:id/track", async (req, res) => {
 });
 
 // Admin: Update complaint status and resolution notes
+// Admin protection is applied in server.js
 router.patch("/:id/status", async (req, res) => {
   try {
     const { status, resolutionNote } = req.body;
@@ -245,5 +218,4 @@ router.patch("/:id/status", async (req, res) => {
   }
 });
 
-// Export router
 module.exports = router;
