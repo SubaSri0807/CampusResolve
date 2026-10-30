@@ -179,7 +179,7 @@
         heading.textContent = "Complaint Details";
         result.appendChild(heading);
 
-        addDetail(result, "Complaint ID", data._id);
+        addDetail(result, "Complaint ID", data.complaintId || data._id);
         addDetail(result, "Title", data.title);
         addDetail(result, "Category", data.category);
         addDetail(result, "Submitted", data.createdAt
